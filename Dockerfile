@@ -8,6 +8,6 @@ COPY pyproject.toml uv.lock .python-version ./
 
 RUN uv sync --locked
 
-COPY ./docker-workshop/pipeline.py .
+COPY ./data_ingestion.py .
 
-ENTRYPOINT ["uv", "run", "python", "pipeline.py"]
+ENTRYPOINT ["uv", "run", "python", "data_ingestion.py"]

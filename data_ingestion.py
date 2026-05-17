@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from sys import prefix
-
 import pandas as pd
+import click
 from sqlalchemy import create_engine
 from tqdm.auto import tqdm
 
@@ -36,16 +35,17 @@ parse_dates = [
 
 
 
-def run():
-    pg_user = "root"
-    pg_password = "root"
-    pg_host = "localhost"
-    pg_port = "5432"
-    pg_db = "ny_taxi"
-    chunk_size = 100000
-    table_name = "yellow_tripdata"
-    year = 2021
-    month = 1
+@click.command()
+@click.option("--pg-user", default="root", show_default=True, help="Postgres username")
+@click.option("--pg-password", default="root", show_default=True, help="Postgres password")
+@click.option("--pg-host", default="localhost", show_default=True, help="Postgres host")
+@click.option("--pg-port", default=5432, show_default=True, type=int, help="Postgres port")
+@click.option("--pg-db", default="ny_taxi", show_default=True, help="Postgres database")
+@click.option("--chunk-size", default=100000, show_default=True, type=int, help="CSV chunk size")
+@click.option("--table-name", default="yellow_tripdata", show_default=True, help="Target table name")
+@click.option("--year", default=2021, show_default=True, type=int, help="Year of dataset")
+@click.option("--month", default=1, show_default=True, type=int, help="Month of dataset")
+def run(pg_user, pg_password, pg_host, pg_port, pg_db, chunk_size, table_name, year, month):
 
     prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow'
     url = f'{prefix}/yellow_tripdata_{year}-{month:02d}.csv.gz'
@@ -65,17 +65,17 @@ def run():
     for df_chunk in tqdm(df_iter):
         if first:
             df_chunk.head(0).to_sql(
-                name=table_name, 
+                name=table_name,
                 con=engine,
                 if_exists='replace'
-                )
+            )
             first = False
 
         df_chunk.to_sql(
-            name=table_name, 
-            con=engine, 
-            if_exists='replace'
-            )
+            name=table_name,
+            con=engine,
+            if_exists='append'
+        )
 
 if __name__ == "__main__":
     run()
